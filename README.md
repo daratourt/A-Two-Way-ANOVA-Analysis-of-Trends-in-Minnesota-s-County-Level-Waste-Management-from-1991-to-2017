@@ -58,12 +58,3 @@ This project investigates recycling trends in Minnesota's counties over a span o
 ## Conclusion
 
 The study reveals significant differences in recycling amounts based on material categories and sources (residential vs. commercial/industrial/institutional). The interaction effect between Category and Type underscores the need for targeted recycling programs. This analysis provides insights that can enhance recycling strategies and improve environmental sustainability.
-
-## Repository Contents
-
-- `data/`: Contains the dataset used for the analysis.
-- `notebooks/`: Jupyter notebooks detailing each step of the analysis, from data preprocessing to statistical testing.
-- `src/`: Source code for data transformation, preprocessing, and analysis.
-- `visualizations/`: Graphs and charts used for data exploration and result presentation.
-- `README.md`: Project overview and instructions.
-
