@@ -24,15 +24,15 @@ This project investigates recycling trends in Minnesota's counties over a span o
 
 ### Main Effect of Category
 - **Null Hypothesis (H0):** The means across all categories are equal.
-  - \( H0: \text{Paper} = \text{Metal} = \text{Glass} = \text{Plastic} = \text{Hazardous} = \text{Other} = \text{Organic} \)
+  - \( H_0: \text{Paper} = \text{Metal} = \text{Glass} = \text{Plastic} = \text{Hazardous} = \text{Other} = \text{Organic} \)
 - **Alternative Hypothesis (Ha):** Not all category means are equal.
-  - \( Ha: \text{At least two means are different} \)
+  - \( H_a: \text{At least two means are different} \)
 
 ### Main Effect of Type
 - **Null Hypothesis (H0):** The mean weight of recycled tons is the same for residential and commercial/industrial/institutional (CII) collections.
-  - \( H0: \text{Res} = \text{CII} \)
+  - \( H_0: \text{Res} = \text{CII} \)
 - **Alternative Hypothesis (Ha):** The mean weight of recycled tons for residential collection is not equal to that for CII.
-  - \( Ha: \text{Res} \neq \text{CII} \)
+  - \( H_a: \text{Res} \neq \text{CII} \)
 
 ### Interaction Between Type and Category
 - **Null Hypothesis (H0):** There is no interaction between Type and Category.
