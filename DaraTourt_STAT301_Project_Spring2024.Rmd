@@ -1,0 +1,274 @@
+---
+title: "STAT301 Project"
+author: "Dara Tourt"
+date: "2024-04-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Dataset
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+library(readxl)
+Wastedata1 <- read_excel("C:/Users/16518/Downloads/Wastedata1 (1).xlsx")
+View(Wastedata1)
+```
+
+## Data Exploration
+
+```{r}
+# Number of rows in the data frame
+num_rows <- nrow(Wastedata1)
+num_rows
+
+# Number of columns in the data frame
+num_columns <- ncol(Wastedata1)
+num_columns
+
+```
+
+```{r}
+# Number of Counties
+length(unique(Wastedata1$County))
+```
+
+```{r}
+str(Wastedata1)
+```
+
+```{r}
+summary(Wastedata1)
+```
+
+```{r}
+sum(is.na(Wastedata1))
+
+```
+
+```{r}
+unique(Wastedata1$Category)
+
+```
+
+## Descriptive Analysis
+
+```{r}
+# Renaming columns 
+names(Wastedata1)[names(Wastedata1) == "Res Tons"] <- "Res_Tons"
+names(Wastedata1)[names(Wastedata1) == "CII Tons"] <- "CII_Tons"
+```
+
+```{r}
+Wastedata1 %>%
+  summarise(Res_Tons_SD = sd(Wastedata1$Res_Tons, na.rm = TRUE),
+            Res_Tons_Var =var(Wastedata1$Res_Tons, na.rm = TRUE),
+            Res_Tons_Mean = mean(Wastedata1$Res_Tons, na.rm = TRUE),
+            Res_Tons_Median = median(Wastedata1$Res_Tons, na.rm = TRUE))
+
+
+```
+
+```{r}
+Wastedata1 %>%
+  summarise(CII_Tons_SD = sd(Wastedata1$CII_Tons, na.rm = TRUE),
+            CII_Tons_Var =var(Wastedata1$CII_Tons, na.rm = TRUE),
+            CII_Tons_Mean = mean(Wastedata1$CII_Tons, na.rm = TRUE),
+            CII_Tons_Median = median(Wastedata1$CII_Tons, na.rm = TRUE))
+
+```
+
+```{r}
+table(Wastedata1$Category)
+prop.table(table(Wastedata1$Category))
+
+```
+
+```{r}
+# Check the names of the columns in the data frame
+print(names(Wastedata1))
+
+```
+
+```{r}
+total_tons_by_county <- Wastedata1 %>%
+  group_by(County) %>%
+  summarise(Total_Res_Tons = sum(Res_Tons, na.rm = TRUE),
+            Total_CII_Tons = sum(CII_Tons, na.rm = TRUE))
+
+total_tons_by_county
+```
+
+```{r}
+# Find the county with the most Res_Tons
+top_res_tons_county <- total_tons_by_county %>%
+  arrange(desc(Total_Res_Tons)) %>%
+  slice(1)
+
+# Find the county with the most CII_Tons
+top_cii_tons_county <- total_tons_by_county %>%
+  arrange(desc(Total_CII_Tons)) %>%
+  slice(1)
+
+# Print the top counties for Res_Tons and CII_Tons
+print(top_res_tons_county)
+print(top_cii_tons_county)
+```
+
+## Visual Exploration
+
+```{r}
+hist(Wastedata1$Res_Tons, main="Histogram of Residential Tons", xlab="Residential Tons", breaks=30)
+
+```
+
+```{r}
+# Create a table of counts for each category
+category_counts <- table(Wastedata1$Category)
+
+# Create a bar plot
+barplot_heights <- barplot(category_counts, main="Counts of Waste Categories", xlab="Category", ylab="Count",
+                           las=2, col="blue", ylim=c(0, max(category_counts) * 1.2))
+
+# Adding count numbers on top of each bar
+text(x=barplot_heights, y=category_counts, label=category_counts, pos=3, cex=0.8)
+
+```
+
+## Transform Data from Wide to Long Format
+
+```{r}
+# Transforming WasteData1 from wide to long format
+Wastedata1_long <- pivot_longer(Wastedata1,
+                               cols = c("Res_Tons", "CII_Tons"),
+                               names_to = "Type",
+                               values_to = "Recycle_Tons")
+# Replace the values in the 'Type' column
+Wastedata1_long$Type <- ifelse(Wastedata1_long$Type == "Res_Tons", "Res", Wastedata1_long$Type)
+Wastedata1_long$Type <- ifelse(Wastedata1_long$Type == "CII_Tons", "CII", Wastedata1_long$Type)
+
+
+# View the transformed dataset
+View(Wastedata1_long)
+```
+
+### Data Exploration
+
+```{r}
+str(Wastedata1_long)
+```
+
+```{r}
+summary(Wastedata1_long)
+```
+
+```{r}
+ unique(Wastedata1_long$Category)
+```
+
+```{r}
+unique(Wastedata1_long$Year)
+```
+
+```{r}
+unique(Wastedata1_long$Type)
+```
+
+```{r}
+results <- Wastedata1_long %>% 
+  group_by(Category) %>%
+  summarize(
+    avewt = mean( Recycle_Tons),
+    sewt = sd( Recycle_Tons) / sqrt(n()),
+    n = n()
+  ) %>%
+  mutate(tstar = qt(1 - 0.05 / 2, n - 1))
+
+# Create the plot with ggplot2
+ggplot(results, aes(x = Category, y = avewt)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = avewt - tstar * sewt, ymax = avewt + tstar * sewt), width = 0.5) +
+  ylim(c(0,700)) +
+  labs(title = "Mean Weight of Recycle In Tons by Category", x = "Category", y = "Weight of Recycle (Tons)") +
+  theme_minimal()
+```
+
+```{r}
+results <- Wastedata1_long %>% 
+  group_by(Type) %>%
+  summarize(
+    avewt = mean( Recycle_Tons),
+    sewt = sd( Recycle_Tons) / sqrt(n()),
+    n = n()
+  ) %>%
+  mutate(tstar = qt(1 - 0.05 / 2, n - 1))
+
+# Create the plot with ggplot2
+ggplot(results, aes(x = Type, y = avewt)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = avewt - tstar * sewt, ymax = avewt + tstar * sewt), width = 0.2) +
+  ylim(c(0,600)) +
+  labs(title = "Mean Weight of Recycle In Tons by Type", x = "Type", y = "Weight of Recycle (Tons)") +
+  theme_minimal()
+```
+
+## Perform Two-Way ANOVA
+
+```{r}
+# Fit the ANOVA model
+model1 <- aov(Recycle_Tons ~ Category + Type + Category:Type, data = Wastedata1_long)
+
+# Display the summary of the ANOVA
+summary(model1)
+```
+
+## Perform One-Way ANOVA After Data into "Res" and "CII"
+
+```{r}
+# Post hoc analysis using Tukey's HSD test
+TukeyHSD(model1)
+
+```
+
+```{r}
+Res_Data <- Wastedata1_long %>% filter(Type=="Res")
+Res_Data
+```
+
+```{r}
+# Fit the ANOVA model
+model2 <- aov(Recycle_Tons ~ Category, data =Res_Data)
+
+# Display the summary of the ANOVA
+summary(model2)
+```
+
+```{r}
+# Post hoc analysis using Tukey's HSD test
+TukeyHSD(model2)
+```
+
+```{r}
+CII_Data <- Wastedata1_long %>% filter(Type=="CII")
+CII_Data
+```
+
+```{r}
+# Fit the ANOVA model
+model3 <- aov(Recycle_Tons ~ Category, data =CII_Data)
+
+# Display the summary of the ANOVA
+summary(model3)
+```
+
+```{r}
+# Post hoc analysis using Tukey's HSD test
+TukeyHSD(model3)
+```
